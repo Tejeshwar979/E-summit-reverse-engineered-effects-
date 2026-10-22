@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>app-loading-screen (recovered)</title>
+<style>html,body{margin:0;height:100%;background:#000;overflow:hidden}
+canvas{display:block;width:100vw;height:100vh}
+.tag{position:fixed;left:8px;top:8px;z-index:9;color:#FF9E2E;font:12px/1.5 monospace;
+     background:rgba(0,0,0,.65);padding:4px 8px;border:1px solid #333}</style></head>
+<body>
+<canvas id="c"></canvas>
+<div class="tag" id="tag">app-loading-screen &mdash; recovered</div>
+<script>
+"use strict";
+window.__err = null;
+window.addEventListener('error', e => { window.__err = (e.error && e.error.stack) || e.message; });
+try {
+class LoadingScreen {
+  constructor(canvas, opts){
+    this.canvasRef = { nativeElement: canvas };
+    this.loadingScreenRef = { nativeElement: document.createElement('div') };
+    this.zoomContainerRef  = { nativeElement: document.createElement('div') };
+    this.openingImageRef  = { nativeElement: document.createElement('div') };
+    this.isDestroyed = false;
+    this.startTime = performance.now();
+    this.PHASE1_DURATION = 1e3; this.PHASE2_DURATION = 1e3; this.PHASE3_DURATION = 2e3;
+    this.TOTAL_DURATION = this.PHASE1_DURATION + this.PHASE2_DURATION + this.PHASE3_DURATION;
+    this.imageFadingIn = false;
+    this.ngZone = { runOutsideAngular: f => f(), run: f => f() };
+    this.onPhase = opts && opts.onPhase;
+  }
+  start(){let t=this.canvasRef.nativeElement,n=t.getContext("2d",{alpha:!0});
+  if(!n)return;
+  let i=t.width=window.innerWidth,a=t.height=window.innerHeight;
+  window.addEventListener("resize",()=>{i=t.width=window.innerWidth,a=t.height=window.innerHeight});
+  let s=[],h=800;
+  for(let b=0;
+  b<h;
+  b++){let A=Math.random()*i*2-i,I=Math.random()*a*2-a;
+  s.push({x:A,y:I,z:Math.random()*i,pz:Math.random()*i,angle:Math.atan2(I,A),dist:Math.sqrt(A*A+I*I)})}let C=5,S=()=>{if(this.isDestroyed)return;
+  let b=performance.now()-this.startTime,A=i/2,I=a/2;
+  if(n.globalCompositeOperation="source-over",n.fillStyle="rgba(0, 0, 0, 0.3)",n.fillRect(0,0,i,a),b<this.PHASE1_DURATION)C<45&&(C+=1.5),n.strokeStyle="white",this.drawStars(n,s,C,i,a,A,I,0);
+  else if(b<this.PHASE1_DURATION+this.PHASE2_DURATION){let U=(b-this.PHASE1_DURATION)/this.PHASE2_DURATION;
+  C=Math.max(2,45-U*43);
+  let ce=U*.15;
+  n.save(),n.globalAlpha=Math.max(0,1-U*.5),n.strokeStyle="rgba(200, 220, 255, 1)",this.drawStars(n,s,C,i,a,A,I,ce),n.restore(),U>.5&&!this.imageFadingIn&&(this.imageFadingIn=!0,this.openingImageRef.nativeElement.classList.add("visible"),this.zoomContainerRef.nativeElement.style.transform="scale(1)")}else if(b<this.TOTAL_DURATION){let U=(b-this.PHASE1_DURATION-this.PHASE2_DURATION)/this.PHASE3_DURATION;
+  if(n.clearRect(0,0,i,a),this.openingImageRef.nativeElement.style.opacity=Math.min(1,U*1.5).toString(),U>.6){let ce=(U-.6)/.4,fe=1+Math.pow(ce,4)*30;
+  this.openingImageRef.nativeElement.style.transformOrigin="75% 45%",this.openingImageRef.nativeElement.style.transform=`scale(${fe})`,this.zoomContainerRef.nativeElement.style.transform="scale(1)"}else this.openingImageRef.nativeElement.style.transformOrigin="75% 45%",this.openingImageRef.nativeElement.style.transform="scale(1)",this.zoomContainerRef.nativeElement.style.transform="scale(1)";
+  this.drawDynamicComet(n,A,I,i,a,U)}else n.clearRect(0,0,i,a),this.loadingScreenRef.nativeElement.classList.contains("fade-out")||this.startFadeOut();
+  this.animationFrameId=requestAnimationFrame(S)};
+  this.ngZone.runOutsideAngular(()=>{S()})}
+  drawStars(t,n,i,a,s,h,C,S){n.forEach(b=>{b.z-=i,S>0&&(b.angle+=S*(1e3/Math.max(100,b.dist)),b.x=Math.cos(b.angle)*b.dist,b.y=Math.sin(b.angle)*b.dist),b.z<=0&&(b.x=Math.random()*a*2-a,b.y=Math.random()*s*2-s,b.z=a,b.pz=a,b.angle=Math.atan2(b.y,b.x),b.dist=Math.sqrt(b.x*b.x+b.y*b.y));
+  let A=b.x/b.z*a+h,I=b.y/b.z*s+C,V=b.x/b.pz*a+h,U=b.y/b.pz*s+C;
+  b.pz=b.z,t.lineWidth=Math.max(.5,(1-b.z/a)*3),t.beginPath(),t.moveTo(V,U),t.lineTo(A,I),t.stroke()})}
+  drawDynamicComet(t,n,i,a,s,h){t.save(),t.translate(n,i);
+  let S=Math.max(0,h-.45),b={x:-a*.8,y:s*.8},
+  A={x:a*.8,y:s*.6},
+  I={x:a*.6,y:-s*.6},
+  V={x:a*.25,y:s*-.05},
+  U=ae=>{let le=1-ae;
+  return{x:le*le*le*b.x+3*le*le*ae*A.x+3*le*ae*ae*I.x+ae*ae*ae*V.x,y:le*le*le*b.y+3*le*le*ae*A.y+3*le*ae*ae*I.y+ae*ae*ae*V.y}},
+  ce=ae=>{let le=1-ae,J=3*le*le*(A.x-b.x)+6*le*ae*(I.x-A.x)+3*ae*ae*(V.x-I.x),ie=3*le*le*(A.y-b.y)+6*le*ae*(I.y-A.y)+3*ae*ae*(V.y-I.y);
+  return Math.atan2(ie,J)},
+  fe=30,$=7,Se=50,Le=Math.sin(h*Math.PI);
+  for(let ae=0;
+  ae<fe;
+  ae++){let le=(ae-fe/2)*$,J=Math.abs(ae-fe/2)/(fe/2),ie=J<.4,De=Math.max(1,4.5-J*3.5),Ee=0,Ye=0,Fe=!1;
+  for(let Qe=0;
+  Qe<=Se;
+  Qe++){let Ke=S+(h-S)*(Qe/Se);
+  if(Ke<=0)continue;
+  let Je=Math.pow(Ke,1.15),We=U(Je),st=Math.max(0,1-Je),Ot=ce(Je)+Math.PI/2,Xt=le*Math.sin(Qe/Se*Math.PI)*st,Yt=We.x+Math.cos(Ot)*Xt,ln=We.y+Math.sin(Ot)*Xt;
+  if(Fe){t.beginPath(),t.moveTo(Ee,Ye),t.lineTo(Yt,ln);
+  let gi=Math.pow(Qe/Se,1.5),br=(ie?1:.6)*gi*Le*(1-J);
+  t.strokeStyle=`rgba(255, 255, 255, ${br})`,t.lineWidth=De*st,t.shadowColor=`rgba(255, 255, 255, ${br})`,t.shadowBlur=(ie?15:20)*st,t.stroke()}Ee=Yt,Ye=ln,Fe=!0}}if(h>0&&h<1){let ae=Math.pow(h,1.15),le=U(ae),J=Math.max(0,1-ae);
+  t.globalAlpha=Le,t.beginPath(),t.arc(le.x,le.y,10*J,0,Math.PI*2),t.fillStyle="#ffffff",t.shadowColor="#ffffff",t.shadowBlur=40*J,t.fill(),t.beginPath(),t.arc(le.x,le.y,45*J,0,Math.PI*2),t.fillStyle="rgba(255, 255, 255, 0.4)",t.shadowBlur=80*J,t.fill()}t.restore()}
+  startFadeOut(){ if (this.onPhase) this.onPhase('fade-out'); }
+}
+const warp = new LoadingScreen(document.getElementById('c'), {
+  onPhase: p => { document.getElementById('tag').textContent = 'app-loading-screen \u2014 recovered \u2014 phase: ' + p; }
+});
+// headless rAF shim (see demo-grid.html)
+const _raf2 = window.requestAnimationFrame.bind(window);
+let _n2 = 0; const _tick2 = () => { _n2++; _raf2(_tick2); }; _raf2(_tick2);
+setTimeout(() => {
+  if (_n2 < 5) { window.requestAnimationFrame = (cb) => setTimeout(() => cb(performance.now()), 16); window.__rafShim = true; }
+  window.__rafFps = _n2;
+  warp.start();
+  // ---- capture harness (test scaffolding, NOT part of the recovered code) ----
+  // Grabs the brightest frame of each of the loader's three phases and POSTs
+  // the raw canvas to the local capture sink.
+  // NOTE: exactly ONE POST per phase. Chrome allows only 6 concurrent
+  // connections per host; fire-and-forget POSTs starve the queue and the
+  // later phases never arrive.
+  const best = { p1: -1, p2: -1, p3: -1 };
+  const frames = {};
+  const posted = {};
+  const post = (p) => {
+    if (posted[p] || !frames[p]) return;
+    posted[p] = true;
+    fetch('/save?name=warp-phase' + p + '.png', { method: 'POST', body: frames[p] })
+      .then(r => r.text())
+      .then(t => { window.__posted = (window.__posted || []).concat(p + ':' + t); })
+      .catch(e => { window.__fetchErr = (window.__fetchErr || '') + ' | ' + e; });
+  };
+  const grab = () => {
+    const cv = document.getElementById('c');
+    const ctx = cv.getContext('2d');
+    const d = ctx.getImageData(0, 0, cv.width, cv.height).data;
+    let lit = 0, blue = 0;
+    for (let i = 0; i < d.length; i += 4) {
+      const L = 0.299*d[i] + 0.587*d[i+1] + 0.114*d[i+2];
+      if (L > 50) { lit++; if (d[i+2] > d[i] + 12) blue++; }
+    }
+    const el = performance.now() - warp.startTime;
+    const phase = el < warp.PHASE1_DURATION ? 1
+                : el < warp.PHASE1_DURATION + warp.PHASE2_DURATION ? 2
+                : el < warp.TOTAL_DURATION ? 3 : 0;
+    const score = phase === 2 ? blue : lit;
+    if (phase && score > best['p' + phase]) {
+      best['p' + phase] = score;
+      frames[phase] = cv.toDataURL('image/png');
+    }
+    // flush a phase's best frame once that phase is over
+    if (el >= 1000) post(1);
+    if (el >= 2000) post(2);
+    if (el >= 4000) post(3);
+  };
+  const iv = setInterval(grab, 70);
+  setTimeout(() => { clearInterval(iv); window.__best = best; }, warp.TOTAL_DURATION + 1500);
+}, 400);
+window.__warp = warp;
+} catch (e) { window.__err = e.stack || String(e); }
+window.__ready = true;
+</script>
+</body></html>

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>app-gravity-bg (recovered)</title>
+<style>html,body{margin:0;height:100%;background:#000;overflow:hidden}
+canvas{display:block;width:100vw;height:100vh}
+.tag{position:fixed;left:8px;top:8px;z-index:9;color:#FF9E2E;font:12px/1.5 monospace;
+     background:rgba(0,0,0,.65);padding:4px 8px;border:1px solid #333}</style></head>
+<body>
+<canvas id="c"></canvas>
+<div class="tag">app-gravity-bg &mdash; recovered &middot; 60px lattice &middot; 250px cursor spotlight</div>
+<script>
+"use strict";
+window.__err = null;
+window.addEventListener('error', e => { window.__err = (e.error && e.error.stack) || e.message; });
+try {
+const h=class{x;
+  y;
+  ox;
+  oy;
+  vx=0;
+  vy=0;
+  constructor(t,e){this.x=t,this.y=e,this.ox=t,this.oy=e}};
+class GravityBg {
+  constructor(canvas){
+    this.canvasRef = { nativeElement: canvas };
+    this.ctx = canvas.getContext("2d");
+    this.points = [];
+    this.mouse = { x: -1e3, y: -1e3 };
+    this.animationFrameId = 0;
+    this.cols = 0; this.rows = 0; this.spacing = 60;
+    this.resize();
+  }
+  resize(){let t=this.canvasRef.nativeElement;
+  t.width=window.innerWidth,t.height=window.innerHeight,this.cols=Math.floor(t.width/this.spacing)+2,this.rows=Math.floor(t.height/this.spacing)+2,this.points=[];
+  for(let e=0;
+  e<this.rows;
+  e++){let i=[];
+  for(let s=0;
+  s<this.cols;
+  s++)i.push(new h(s*this.spacing,e*this.spacing));
+  this.points.push(i)}}
+  onMouseMove(t){this.mouse.x=t.clientX,this.mouse.y=t.clientY}
+  onMouseLeave(){this.mouse.x=-1e3,this.mouse.y=-1e3}
+  animate=()=>{this.ctx.fillStyle="black",this.ctx.fillRect(0,0,this.canvasRef.nativeElement.width,this.canvasRef.nativeElement.height);
+  for(let t=0;
+  t<this.rows;
+  t++)for(let e=0;
+  e<this.cols;
+  e++){let i=this.points[t][e],s=this.mouse.x-i.ox,n=this.mouse.y-i.oy,c=Math.sqrt(s*s+n*n),l=i.ox,v=i.oy,r=250;
+  if(c<r){let m=(r-c)/r;
+  l=i.ox+s*m*.7,v=i.oy+n*m*.7}i.vx+=(l-i.x)*.15,i.vy+=(v-i.y)*.15,i.vx*=.65,i.vy*=.65,i.x+=i.vx,i.y+=i.vy}this.ctx.strokeStyle="rgba(255, 255, 255, 0.7)",this.ctx.lineWidth=1,this.ctx.beginPath();
+  for(let t=0;
+  t<this.rows;
+  t++){this.ctx.moveTo(this.points[t][0].x,this.points[t][0].y);
+  for(let e=1;
+  e<this.cols;
+  e++)this.ctx.lineTo(this.points[t][e].x,this.points[t][e].y)}for(let t=0;
+  t<this.cols;
+  t++){this.ctx.moveTo(this.points[0][t].x,this.points[0][t].y);
+  for(let e=1;
+  e<this.rows;
+  e++)this.ctx.lineTo(this.points[e][t].x,this.points[e][t].y)}if(this.ctx.stroke(),this.mouse.x!==-1e3){this.ctx.globalCompositeOperation="destination-in";
+  let t=this.ctx.createRadialGradient(this.mouse.x,this.mouse.y,0,this.mouse.x,this.mouse.y,250);
+  t.addColorStop(0,"rgba(0, 0, 0, 1)"),t.addColorStop(1,"rgba(0, 0, 0, 0)"),this.ctx.fillStyle=t,this.ctx.fillRect(0,0,this.canvasRef.nativeElement.width,this.canvasRef.nativeElement.height),this.ctx.globalCompositeOperation="source-over"}else this.ctx.clearRect(0,0,this.canvasRef.nativeElement.width,this.canvasRef.nativeElement.height),this.ctx.fillStyle="black",this.ctx.fillRect(0,0,this.canvasRef.nativeElement.width,this.canvasRef.nativeElement.height);
+  this.animationFrameId=requestAnimationFrame(this.animate)}
+}
+const grid = new GravityBg(document.getElementById('c'));
+// Headless shim: this browser window is not foregrounded, so the real
+// requestAnimationFrame gets throttled to ~0. Detect that and fall back to a
+// timer. The recovered algorithm itself is untouched.
+const _raf = window.requestAnimationFrame.bind(window);
+let _n = 0; const _tick = () => { _n++; _raf(_tick); }; _raf(_tick);
+setTimeout(() => {
+  if (_n < 5) { window.requestAnimationFrame = (cb) => setTimeout(() => cb(performance.now()), 16); window.__rafShim = true; }
+  window.__rafFps = _n;
+  grid.animate();
+}, 400);
+// mirror the component's hostBindings (Angular target 'o' === window):
+//   "resize" -> resize(), "mousemove" -> onMouseMove($event), "mouseleave" -> onMouseLeave()
+window.addEventListener('resize', () => grid.resize());
+window.addEventListener('mousemove', e => grid.onMouseMove(e));
+window.addEventListener('mouseleave', () => grid.onMouseLeave());
+// drive a real cursor path so the spotlight tracks.
+// NOTE: the component's own onMouseLeave() resets mouse to -1e3 (that is what
+// makes the live site's canvas go black when the pointer leaves the window),
+// so the demo calls the recovered handler directly to keep the spotlight on.
+let t = 0;
+const fire = () => {
+  t += 0.02;
+  const x = innerWidth/2 + Math.cos(t)*innerWidth*0.22;
+  const y = innerHeight/2 + Math.sin(t*1.3)*innerHeight*0.22;
+  grid.onMouseMove({ clientX: x, clientY: y });
+};
+setInterval(fire, 30);
+window.__grid = grid;
+// capture the steady-state frame once the spring system has settled
+setTimeout(() => {
+  const cv = document.getElementById('c');
+  fetch('/save?name=grid-mesh.png', { method: 'POST', body: cv.toDataURL('image/png') })
+    .then(r => r.text())
+    .then(t => { window.__posted = t; })
+    .catch(e => { window.__fetchErr = String(e); });
+}, 2500);
+} catch (e) { window.__err = e.stack || String(e); }
+window.__ready = true;
+</script>
+</body></html>

@@ -1,0 +1,10 @@
+const fs = require('fs'), path = require('path');
+const s = fs.readFileSync(path.join(__dirname, 'chunks', 'chunk-AXVDNMKI.js'), 'utf8');
+const i = s.indexOf('selectors:[["app-gravity-bg"]]');
+const start = s.lastIndexOf('var C=["gravityCanvas"]', i);
+const end = s.indexOf('styles:[', i);
+let out = s.slice(start, end + 6000);
+out = out.replace(/;/g, ';\n');
+fs.writeFileSync(path.join(__dirname, 'gravity.component.js'), out);
+console.log('written gravity.component.js', out.length, 'chars');
+console.log(out.slice(0, 7000));

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>Recovered E-Summit effects - captured frames</title>
+<style>
+  body{margin:0;background:#0b0b0f;color:#eee;font:13px/1.5 ui-monospace,Menlo,Consolas,monospace}
+  h1{font-size:16px;color:#FF9E2E;margin:0;padding:14px 18px 4px}
+  p.sub{margin:0 0 10px;padding:0 18px;color:#999}
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;padding:0 18px 22px}
+  figure{margin:0;background:#000;border:1px solid #2a2a33;border-radius:6px;overflow:hidden}
+  figure img{width:100%;display:block;background:#000}
+  figcaption{padding:7px 10px;color:#bbb;border-top:1px solid #2a2a33}
+  figcaption b{color:#FF9E2E}
+  .tag{display:inline-block;padding:1px 6px;border:1px solid #444;border-radius:3px;margin-right:6px;color:#ddd}
+</style></head>
+<body>
+<h1>Recovered E-Summit 2026 background effects &mdash; live captures from the reconstructed code</h1>
+<p class="sub">Every pixel below was rendered by the <b>recovered</b> component code (spliced verbatim out of the production bundle), captured live in Chromium.</p>
+<div class="grid">
+
+  <figure>
+    <img src="captures/grid-mesh.png" alt="grid mesh">
+    <figcaption><span class="tag">app-gravity-bg</span><b>Grid mesh</b> &mdash; 60&nbsp;px lattice, spring-coupled nodes,
+    cursor <i>repels</i> within r=250&nbsp;px, everything else erased by the <code>destination-in</code> radial mask.<br>
+    9&thinsp;021 lit px (1.37% of canvas) &middot; all white &middot; 74% of the canvas is fully transparent.</figcaption>
+  </figure>
+
+  <figure>
+    <img src="captures/warp-phase1.png" alt="warp stars">
+    <figcaption><span class="tag">app-loading-screen</span><b>Phase 1 &mdash; warp speed</b> &mdash; 800 stars streaking out
+    from the vanishing point, <code>lineWidth = max(.5,(1-z/W)*3)</code>, <code>strokeStyle="white"</code>.<br>
+    15&thinsp;828 lit px &middot; <b>100% pure white</b> (blue=0) &middot; max luminance 255.</figcaption>
+  </figure>
+
+  <figure>
+    <img src="captures/warp-phase2.png" alt="warp swirl">
+    <figcaption><span class="tag">app-loading-screen</span><b>Phase 2 &mdash; deceleration / swirl</b> &mdash;
+    <code>C = max(2,45-U*43)</code> shortens the streaks while they swirl around the centre.<br>
+    8&thinsp;941 lit px &middot; <b>8&thinsp;082 ice-blue vs 859 white</b> &mdash; the stroke turns
+    <code>rgba(200,220,255,1)</code> &middot; max luminance 196 (the 0.5&times; globalAlpha fade).</figcaption>
+  </figure>
+
+  <figure>
+    <img src="captures/warp-phase3.png" alt="lightning comet">
+    <figcaption><span class="tag">app-loading-screen</span><b>Phase 3 &mdash; the lightning bolt</b> &mdash;
+    <code>drawDynamicComet</code>: a cubic Bézier bolt with 30 streaks, a pinch at the head and a glowing disc.<br>
+    45&thinsp;541 lit px (6.51% of canvas) &middot; max luminance 255 at (966,&nbsp;321) &middot; centroid (797,&nbsp;553).</figcaption>
+  </figure>
+
+</div>
+</body></html>
